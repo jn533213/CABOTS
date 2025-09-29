@@ -25,7 +25,7 @@ Ensure that meta-data is properly organized HERE.
 
 #Cycle through each season
 #spring,summer,fall
-season = 'summer'
+season = 'spring'
 if season=='spring':
 	months_covered='4,5,6'
 elif season=='summer':

@@ -328,7 +328,7 @@ def IDW_bottom_var(
 interpolated_depths = np.arange(10,1000)
 
 #State which season you want to isolate
-season = 'fall'
+season = 'spring'
 
 #Define the years of interest
 years = np.arange(1980,2024+1).astype(str)

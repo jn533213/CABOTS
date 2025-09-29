@@ -79,7 +79,7 @@ max_depth_bath = max_depth_bath[:-1,:-1]
 
 #Define the season and years that will be averaged
 years = np.arange(1980,2024+1).astype(str)
-season = 'summer'
+season = 'fall'
 
 #Import the climatology for the season in order to fill gaps
 clim_years = np.arange(1990,2021+1)
@@ -143,6 +143,8 @@ for region in regional_mask:
 	regional_avg[region]['Tmean_sha100'] = np.full(years.size, np.nan)
 	regional_avg[region]['Tmean_sha200'] = np.full(years.size, np.nan)
 	regional_avg[region]['Tmean_sha300'] = np.full(years.size, np.nan)
+	regional_avg[region]['Tmean_deep200'] = np.full(years.size, np.nan)
+	regional_avg[region]['Tmean_deep300'] = np.full(years.size, np.nan)
 	regional_avg[region]['area_colder0'] = np.full(years.size, np.nan)
 	regional_avg[region]['area_colder1'] = np.full(years.size, np.nan)
 	regional_avg[region]['area_warmer2'] = np.full(years.size, np.nan)
@@ -219,6 +221,10 @@ for i,year in enumerate(years[:]):
 		mask_200m[mask_200m == 0] = np.nan
 		mask_300m = (bath_mask<=300).astype(float)
 		mask_300m[mask_300m == 0] = np.nan
+		mask_200m_dp = (bath_mask>=200).astype(float)
+		mask_200m_dp[mask_200m_dp == 0] = np.nan
+		mask_300m_dp = (bath_mask>=300).astype(float)
+		mask_300m_dp[mask_300m_dp == 0] = np.nan
 
 		#Fill in missing area with climatology
 		bath_mask_bool = bath_mask.copy()
@@ -240,6 +246,8 @@ for i,year in enumerate(years[:]):
 		Tmean100 = np.nanmean(btm_temp_region*mask_100m)
 		Tmean200 = np.nanmean(btm_temp_region*mask_200m)
 		Tmean300 = np.nanmean(btm_temp_region*mask_300m)
+		Tmean200_dp = np.nanmean(btm_temp_region*mask_200m_dp)
+		Tmean300_dp = np.nanmean(btm_temp_region*mask_300m_dp)
 
 		#Mean salinity at depths shallower than 200m
 		Smean200 = np.nanmean(btm_saln_region*mask_200m)
@@ -291,6 +299,8 @@ for i,year in enumerate(years[:]):
 		regional_avg[region]['Tmean_sha100'][i] = Tmean100.round(3)
 		regional_avg[region]['Tmean_sha200'][i] = Tmean200.round(3)
 		regional_avg[region]['Tmean_sha300'][i] = Tmean300.round(3)
+		regional_avg[region]['Tmean_deep200'][i] = Tmean200_dp.round(3)
+		regional_avg[region]['Tmean_deep300'][i] = Tmean300_dp.round(3)
 		regional_avg[region]['area_colder0'][i] = area_colder_0deg.round(3)
 		regional_avg[region]['area_colder1'][i] = area_colder_1deg.round(3)
 		regional_avg[region]['area_warmer2'][i] = area_warmer_2deg.round(3)

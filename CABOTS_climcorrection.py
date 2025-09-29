@@ -22,7 +22,7 @@ The purpose of this script is to apply the climate correction to the seasonal da
 '''
 
 #Import the data of interest
-season = 'summer'
+season = 'spring'
 path = '/home/jcoyne/Documents/Bottom_Stats/climatology/'+season+'/'
 
 #Define the climatology months of interest
