@@ -23,10 +23,10 @@ The purpose of this script is to apply the climate correction to the seasonal da
 
 #Import the data of interest
 season = 'spring'
-path = '/home/jcoyne/Documents/Bottom_Stats/climatology/'+season+'/'
+path = '/home/coynej/Documents/Bottom_Stats/climatology/'+season+'/'
 
 #Define the climatology months of interest
-path_clim = '/home/jcoyne/Documents/Bottom_Stats/climatology/'
+path_clim = '/home/coynej/Documents/Bottom_Stats/climatology/'
 if season == 'spring':
 	start_month = '04' #should be in a 00 01 format
 	end_month = '06' #same as above
@@ -41,7 +41,7 @@ elif season == 'fall':
 	chosen_month = 11
 
 #Cycle through the years of interest
-years = np.arange(1980,2024+1).astype(str)
+years = np.arange(1980,2025+1).astype(str)
 for year in years[:]:
 
 	#Import the data of interest
@@ -73,7 +73,7 @@ for year in years[:]:
 
 
 	#Save the results into a netcdf
-	path_output = '/home/jcoyne/Documents/Bottom_Stats/adjusted/'+season+'/'
+	path_output = '/home/coynej/Documents/Bottom_Stats/adjusted/'+season+'/'
 
 	#Set up the .nc file
 	nc_out = nc.Dataset(path_output+year+'.nc','w')

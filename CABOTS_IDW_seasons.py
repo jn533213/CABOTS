@@ -23,8 +23,8 @@ These will later be used to create a monthly bottom temperature climatology.
 '''
 
 #Import the bathymetry that the data will be interpolated to
-path = '/home/jcoyne/Documents/Datasets/GEBCO_2023/'
-ds_bath = xr.open_dataset(path + 'GEBCO_2023_sub_ice_topo.nc')
+path = '/home/coynej/Documents/Datasets/GEBCO_2023/'
+ds_bath = xr.open_dataset(path + 'gebco_2025_n90.0_s0.0_w-120.0_e0.0.nc')
 
 #Isolate the region of interest
 lonLims = [-100,-42]
@@ -328,7 +328,7 @@ def IDW_bottom_var(
 interpolated_depths = np.arange(10,1000)
 
 #State which season you want to isolate
-season = 'spring'
+season = 'fall'
 
 #Define the years of interest
 years = np.arange(1980,2024+1).astype(str)
@@ -392,7 +392,7 @@ for year in years[:]:
 	end = tt.time()
 
 	#Save the CASTS_output
-	path_output = '/home/jcoyne/Documents/Bottom_Stats/climatology/'+season+'/'
+	path_output = '/home/coynej/Documents/Bottom_Stats/climatology/'+season+'/'
 	CASTS_used = np.array([lons[CASTS_used],lats[CASTS_used]]).T
 	np.save(path_output+'CASTS_profilesused_'+season+'_'+year,CASTS_used)
 

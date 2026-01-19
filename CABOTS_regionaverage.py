@@ -3,7 +3,6 @@ import netCDF4 as nc
 from scipy.interpolate import griddata
 import cmocean as cm
 import shapely.geometry
-import rasterio.features
 import warnings
 import time as tt
 import pandas as pd
@@ -29,7 +28,7 @@ This will be saved in a .csv output.
 
 
 #Import the shapefiles of interest
-path_shp = '/home/jcoyne/Documents/Bottom_Stats/operation_files/NAFO_Divisions_SHP/'
+path_shp = '/home/coynej/Documents/Bottom_Stats/operation_files/NAFO_Divisions_SHP/'
 shape_file = shapefile.Reader(path_shp + 'NAFO_Divisions_2021_poly_not_clipped.shp')
 
 #Record all of the names
@@ -62,8 +61,8 @@ for idx, rec in enumerate(records):
 
 
 #Import the bathymetry
-path = '/home/jcoyne/Documents/Datasets/GEBCO_2023/'
-ds_bath = xr.open_dataset(path + 'GEBCO_2023_sub_ice_topo.nc')
+path = '/home/coynej/Documents/Datasets/GEBCO_2023/'
+ds_bath = xr.open_dataset(path + 'gebco_2025_n90.0_s0.0_w-120.0_e0.0.nc')
 
 #Isolate the region of interest
 lonLims = [-70,-42]
@@ -78,12 +77,12 @@ lats_bath = lats_bath[:-1,:-1]
 max_depth_bath = max_depth_bath[:-1,:-1]
 
 #Define the season and years that will be averaged
-years = np.arange(1980,2024+1).astype(str)
+years = np.arange(1980,2025+1).astype(str)
 season = 'fall'
 
 #Import the climatology for the season in order to fill gaps
-clim_years = np.arange(1990,2021+1)
-path = '/home/jcoyne/Documents/Bottom_Stats/final_product/'
+clim_years = np.arange(1991,2020+1)
+path = '/home/coynej/Documents/Bottom_Stats/final_product/'
 ds_clim = xr.open_dataset(path+'CABOTS_'+season+'.nc')
 ds_clim = ds_clim.isel(TIME = np.isin(ds_clim['TIME.year'],clim_years))
 clim_temp = ds_clim.BOTTOM_TEMPERATURE.mean(axis=0).values
@@ -181,7 +180,7 @@ for region in regional_mask:
 
 
 #Import the data of interest
-path = '/home/jcoyne/Documents/Bottom_Stats/final_product/'
+path = '/home/coynej/Documents/Bottom_Stats/final_product/'
 ds = xr.open_dataset(path+'CABOTS_'+season+'.nc')
 
 #Cycle through each of the years
@@ -338,7 +337,7 @@ for i,year in enumerate(years[:]):
 	print(year+' done!')
 
 #Record the averages in a csv file
-path_output = '/home/jcoyne/Documents/Bottom_Stats/final_product/csv_averages/'
+path_output = '/home/coynej/Documents/Bottom_Stats/final_product/csv_averages/'
 for region in regional_avg:
 	df = pd.DataFrame.from_dict(regional_avg[region], orient='index').transpose()
 	df.index = years.astype(int)
@@ -357,12 +356,10 @@ for region in regional_avg:
 	df.to_csv(path_output+'/'+season+'_'+region+'_regional_averages.csv')
 
 #Record in pickle files as well (for Fred's scripts)
-'''
-pickle_files = ['3Ps','3LNO','3M','3K','3L','3O','2G','2H','2J','2HJ','2GH']
+pickle_files = ['3Ps','3LNO_grandbanks','3K','3L','3O','2G','2H','2J','2HJ','2GH_labradorshelf']
 for i in pickle_files:
 	dict_to_df = pd.DataFrame.from_dict(regional_avg[i], orient='columns')
 	dict_to_df.index = years
-	outname = path_output+season+'/'+'stats_'+i+'_'+season+'.pkl'
+	outname = path_output+'/'+'stats_'+i+'_'+season+'.pkl'
 	dict_to_df.to_pickle(outname)
-'''
 

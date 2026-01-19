@@ -3,7 +3,6 @@ import netCDF4 as nc
 from scipy.interpolate import griddata
 import cmocean as cm
 import shapely.geometry
-import rasterio.features
 import warnings
 import time as tt
 import pandas as pd
@@ -25,17 +24,20 @@ Ensure that meta-data is properly organized HERE.
 
 #Cycle through each season
 #spring,summer,fall
-season = 'spring'
+season = 'fall'
 if season=='spring':
 	months_covered='4,5,6'
+	month_center = 5
 elif season=='summer':
 	months_covered='7,8,9'
+	month_center = 8
 elif season=='fall':
 	months_covered='10,11,12'
+	month_center = 11
 
 #Define the temperature and salinity paths
-path = '/home/jcoyne/Documents/Bottom_Stats/adjusted/'+season+'/'
-finl_path = '/home/jcoyne/Documents/Bottom_Stats/final_product/'
+path = '/home/coynej/Documents/Bottom_Stats/adjusted/'+season+'/'
+finl_path = '/home/coynej/Documents/Bottom_Stats/final_product/'
 
 #Import the data of interest
 ds = xr.open_mfdataset(path+'*.nc')
@@ -49,6 +51,10 @@ saln = ds.bottom_salinity.values
 saln_adj = ds.bottom_salinity_adjusted.values
 temp = ds.bottom_temperature.values
 temp_adj = ds.bottom_temperature_adjusted.values
+
+#Create a month-adjusted time output
+dates_pd = pd.Series(pd.to_datetime(ds.time.values))
+dates_pd = dates_pd.apply(lambda x: x.replace(month=month_center))
 
 #Create filter
 x_filter_min = np.where(longitude[0,:] >= lonLims[0])[0][0]
@@ -109,10 +115,10 @@ bottom_temp.standard_name = 'bottom_temperature'
 bottom_temp_adjusted.units = 'degC'
 bottom_temp_adjusted.long_name = 'sea floor temperature - time adjusted'
 bottom_temp_adjusted.standard_name = 'bottom_temperature_adjusted'
-bottom_saln.units = 'psu'
+bottom_saln.units = ''
 bottom_saln.long_name = 'sea floor salinity'
 bottom_saln.standard_name = 'bottom_salinity'
-bottom_saln_adjusted.units = 'psu'
+bottom_saln_adjusted.units = ''
 bottom_saln_adjusted.long_name = 'sea floor salinity - time adjusted'
 bottom_saln_adjusted.standard_name = 'bottom_salinity_adjusted'
 
@@ -127,7 +133,7 @@ bottom_lats[:,:] = latitude
 #Fill in the dimensions
 xs[:] = np.arange(longitude.shape[1])
 ys[:] = np.arange(latitude.shape[0])
-time_stamp = [pd.Timestamp(i) for i in ds.time.values]
+time_stamp = [pd.Timestamp(i) for i in dates_pd.values]
 times[:] = nc.date2num(time_stamp, units=times.units, calendar=times.calendar)
 
 #Save and close the .nc file
@@ -144,26 +150,26 @@ for i,value in enumerate(time_stamp):
 
 	#Isolate temperature
 	df_temp = pd.DataFrame(
-		temp[i],
-		columns = longitude[0,:],index = latitude[:,0],
-		)
-	df_temp.index.name = 'latitude'
-	df_temp.columns.name = 'longitude'
+		[longitude[:,:].flatten(),latitude[:,:].flatten(),temp[i].flatten()],
+		).T
+	df_temp.columns = ['latitude','longitude','sea_floor_temperature']
+	df_temp = df_temp.dropna(subset='sea_floor_temperature')
+	df_temp.index = np.arange(df_temp.index.size)
 	df_temp.to_csv(finl_path+'csv_files/CABOTS_'+season+'_seafloortemperature_'+str(value.year)+'.csv')
 
 	#Isolate salinity
 	df_saln = pd.DataFrame(
-		saln[i],
-		columns = longitude[0,:],index = latitude[:,0],
-		)
-	df_saln.index.name = 'latitude'
-	df_saln.columns.name = 'longitude'
+		[longitude[:,:].flatten(),latitude[:,:].flatten(),saln[i].flatten()],
+		).T
+	df_saln.columns = ['latitude','longitude','sea_floor_salinity']
+	df_saln = df_saln.dropna(subset='sea_floor_salinity')
+	df_saln.index = np.arange(df_saln.index.size)
 	df_saln.to_csv(finl_path+'csv_files/CABOTS_'+season+'_seafloorsalinity_'+str(value.year)+'.csv')
 	print(str(value.year)+' done!')
 
 #Save the climatology of temperature and salinity as well
 clim_years = np.arange(1991,2020+1)
-path = '/home/jcoyne/Documents/Bottom_Stats/final_product/'
+path = '/home/coynej/Documents/Bottom_Stats/final_product/'
 ds_clim = xr.open_dataset(path+'CABOTS_'+season+'.nc')
 ds_clim = ds_clim.isel(TIME = np.isin(ds_clim['TIME.year'],clim_years))
 clim_temp = ds_clim.BOTTOM_TEMPERATURE.mean(axis=0).values
@@ -171,18 +177,18 @@ clim_saln = ds_clim.BOTTOM_SALINITY.mean(axis=0).values
 longitude = ds_clim.LONGITUDE.values
 latitude = ds_clim.LATITUDE.values
 df_temp = pd.DataFrame(
-	clim_temp,
-	columns = longitude[0,:],index = latitude[:,0],
-	)
-df_temp.index.name = 'latitude'
-df_temp.columns.name = 'longitude'
+	[longitude[:,:].flatten(),latitude[:,:].flatten(),clim_temp[i].flatten()],
+	).T
+df_temp.columns = ['latitude','longitude','sea_floor_temperature']
+df_temp = df_temp.dropna(subset='sea_floor_temperature')
+df_temp.index = np.arange(df_temp.index.size)
 df_temp.to_csv(finl_path+'csv_files/CABOTS_'+season+'_seafloortemperature_climatology'+str(clim_years[0])+'-'+str(clim_years[-1])+'.csv')
 df_saln = pd.DataFrame(
-	clim_saln,
-	columns = longitude[0,:],index = latitude[:,0],
-	)
-df_saln.index.name = 'latitude'
-df_saln.columns.name = 'longitude'
+	[longitude[:,:].flatten(),latitude[:,:].flatten(),clim_saln[i].flatten()],
+	).T
+df_saln.columns = ['latitude','longitude','sea_floor_salinity']
+df_saln = df_saln.dropna(subset='sea_floor_salinity')
+df_saln.index = np.arange(df_saln.index.size)
 df_saln.to_csv(finl_path+'csv_files/CABOTS_'+season+'_seafloorsalinity_climatology'+str(clim_years[0])+'-'+str(clim_years[-1])+'.csv')
 
 
