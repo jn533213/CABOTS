@@ -331,7 +331,7 @@ interpolated_depths = np.arange(10,1000)
 season = 'fall'
 
 #Define the years of interest
-years = np.arange(1980,2024+1).astype(str)
+years = np.arange(1980,2025+1).astype(str)
 for year in years[:]:
 
 	#Import the CASTS file of interest
